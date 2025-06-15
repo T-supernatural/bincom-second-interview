@@ -53,12 +53,62 @@
         .nav {
             margin-top: 2em;
         }
+
+        .navbar {
+            background: #f4f4f4;
+            padding: 10px 0;
+            margin-bottom: 2em;
+        }
+
+        .navbar a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .navbar a.active {
+            color: #007bff;
+        }
     </style>
+    <script>
+        function fetchPollingUnits() {
+            var lgaSelect = document.getElementById('lga_id');
+            var puSelect = document.getElementById('polling_unit_id');
+            puSelect.innerHTML = '<option value="">Loading...</option>';
+            fetch('/get_polling_units?lga_id=' + lgaSelect.value)
+                .then(response => response.json())
+                .then(data => {
+                    puSelect.innerHTML = '<option value="">-- Select Polling Unit --</option>';
+                    data.forEach(function (pu) {
+                        var opt = document.createElement('option');
+                        opt.value = pu.uniqueid;
+                        opt.textContent = pu.polling_unit_name;
+                        puSelect.appendChild(opt);
+                    });
+                });
+        }
+    </script>
 </head>
 
 <body>
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/q1_polling_unit_results">Q1: Polling Unit Results</a>
+        <a href="/q2_lga_results">Q2: LGA Results</a>
+        <a href="/q3_store_results" class="active">Q3: Enter Results</a>
+    </div>
     <h1>Enter New Election Result for a Polling Unit</h1>
     <form method="POST">
+        <label for="lga_id">LGA:</label>
+        <select name="lga_id" id="lga_id" required onchange="fetchPollingUnits()">
+            <option value="">-- Select LGA --</option>
+            {% for lga in lgas %}
+            <option value="{{ lga.lga_id }}" {% if form_data.lga_id==lga.lga_id %}selected{% endif %}>{{ lga.lga_name
+                }}</option>
+            {% endfor %}
+        </select>
+
         <label for="polling_unit_id">Polling Unit:</label>
         <select name="polling_unit_id" id="polling_unit_id" required>
             <option value="">-- Select Polling Unit --</option>

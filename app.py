@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import sqlite3
 import os  # Import os module to check for file existence
 
@@ -119,15 +119,16 @@ def q2_lga_results():
 @app.route('/q3_store_results', methods=['GET', 'POST'])
 def q3_store_results():
     conn = get_db_connection()
-    polling_units = conn.execute(
-        'SELECT uniqueid, polling_unit_name FROM polling_unit').fetchall()
+    lgas = conn.execute('SELECT lga_id, lga_name FROM lga').fetchall()
+    polling_units = []
     parties = conn.execute('SELECT partyid, partyname FROM party').fetchall()
     message = None
     success = False
-    form_data = {'polling_unit_id': '', 'party_abbreviation': '',
-                 'party_score': '', 'entered_by_user': ''}
+    form_data = {'lga_id': '', 'polling_unit_id': '',
+                 'party_abbreviation': '', 'party_score': '', 'entered_by_user': ''}
 
     if request.method == 'POST':
+        form_data['lga_id'] = request.form.get('lga_id', '').strip()
         form_data['polling_unit_id'] = request.form.get(
             'polling_unit_id', '').strip()
         form_data['party_abbreviation'] = request.form.get(
@@ -135,8 +136,12 @@ def q3_store_results():
         form_data['party_score'] = request.form.get('party_score', '').strip()
         form_data['entered_by_user'] = request.form.get(
             'entered_by_user', '').strip()
+        # Repopulate polling units for selected LGA
+        if form_data['lga_id']:
+            polling_units = conn.execute(
+                'SELECT uniqueid, polling_unit_name FROM polling_unit WHERE lga_id = ?', (form_data['lga_id'],)).fetchall()
         # Validation
-        if not all(form_data.values()):
+        if not all([form_data['lga_id'], form_data['polling_unit_id'], form_data['party_abbreviation'], form_data['party_score'], form_data['entered_by_user']]):
             message = 'All fields are required.'
         elif not form_data['party_score'].isdigit():
             message = 'Party score must be a number.'
@@ -148,24 +153,42 @@ def q3_store_results():
                 user_ip_address = request.remote_addr or 'unknown'
                 conn.execute(
                     'INSERT INTO announced_pu_results (polling_unit_uniqueid, party_abbreviation, party_score, entered_by_user, date_entered, user_ip_address) VALUES (?, ?, ?, ?, ?, ?)',
-                    (form_data['polling_unit_id'], form_data['party_abbreviation'], party_score, form_data['entered_by_user'], date_entered, user_ip_address)
+                    (form_data['polling_unit_id'], form_data['party_abbreviation'],
+                     party_score, form_data['entered_by_user'], date_entered, user_ip_address)
                 )
                 conn.commit()
                 message = 'Result saved successfully!'
                 success = True
-                form_data = {'polling_unit_id': '', 'party_abbreviation': '', 'party_score': '', 'entered_by_user': ''}
+                form_data = {'lga_id': '', 'polling_unit_id': '',
+                             'party_abbreviation': '', 'party_score': '', 'entered_by_user': ''}
+                polling_units = []
             except Exception as e:
                 message = f'Error: {str(e)}'
+    else:
+        # GET: show all polling units if no LGA selected
+        polling_units = conn.execute(
+            'SELECT uniqueid, polling_unit_name FROM polling_unit').fetchall()
     conn.close()
-
     return render_template(
         'q3_store_results.html',
+        lgas=lgas,
         polling_units=polling_units,
         parties=parties,
         message=message,
         success=success,
         form_data=form_data
     )
+
+
+# --- Route to get polling units by LGA (NEWLY ADDED) ---
+@app.route('/get_polling_units')
+def get_polling_units():
+    lga_id = request.args.get('lga_id')
+    conn = get_db_connection()
+    polling_units = conn.execute(
+        'SELECT uniqueid, polling_unit_name FROM polling_unit WHERE lga_id = ?', (lga_id,)).fetchall()
+    conn.close()
+    return jsonify([{'uniqueid': pu['uniqueid'], 'polling_unit_name': pu['polling_unit_name']} for pu in polling_units])
 
 
 if __name__ == '__main__':

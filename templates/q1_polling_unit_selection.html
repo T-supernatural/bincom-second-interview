@@ -70,10 +70,34 @@
             color: #888;
             font-style: italic;
         }
+
+        .navbar {
+            background: #f4f4f4;
+            padding: 10px 0;
+            margin-bottom: 2em;
+            text-align: center;
+        }
+
+        .navbar a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .navbar a.active {
+            color: #007bff;
+        }
     </style>
 </head>
 
 <body>
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/q1_polling_unit_results" class="active">Q1: Polling Unit Results</a>
+        <a href="/q2_lga_results">Q2: LGA Results</a>
+        <a href="/q3_store_results">Q3: Enter Results</a>
+    </div>
     <div class="container">
         <h1>Question 1: Display Polling Unit Results</h1>
 
