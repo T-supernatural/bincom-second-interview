@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Enter New Election Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2em;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        form {
+            margin-top: 1.5em;
+            max-width: 400px;
+        }
+
+        label {
+            display: block;
+            margin-top: 1em;
+        }
+
+        select,
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 0.3em;
+        }
+
+        button {
+            margin-top: 1.5em;
+            padding: 10px 20px;
+        }
+
+        .message {
+            margin-top: 1em;
+            font-weight: bold;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: #b00;
+        }
+
+        .nav {
+            margin-top: 2em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Enter New Election Result for a Polling Unit</h1>
+    <form method="POST">
+        <label for="polling_unit_id">Polling Unit:</label>
+        <select name="polling_unit_id" id="polling_unit_id" required>
+            <option value="">-- Select Polling Unit --</option>
+            {% for pu in polling_units %}
+            <option value="{{ pu.uniqueid }}" {% if form_data.polling_unit_id==pu.uniqueid %}selected{% endif %}>{{
+                pu.polling_unit_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="party_abbreviation">Party:</label>
+        <select name="party_abbreviation" id="party_abbreviation" required>
+            <option value="">-- Select Party --</option>
+            {% for party in parties %}
+            <option value="{{ party.partyid }}" {% if form_data.party_abbreviation==party.partyid %}selected{% endif %}>
+                {{ party.partyname }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="party_score">Party Score:</label>
+        <input type="number" name="party_score" id="party_score" min="0" required
+            value="{{ form_data.party_score or '' }}">
+
+        <label for="entered_by_user">Agent Name:</label>
+        <input type="text" name="entered_by_user" id="entered_by_user" required
+            value="{{ form_data.entered_by_user or '' }}">
+
+        <button type="submit">Submit Result</button>
+    </form>
+
+    {% if message %}
+    <div class="message {{ 'success' if success else 'error' }}">{{ message }}</div>
+    {% endif %}
+
+    <div class="nav">
+        <a href="/">&#8592; Back to Home</a>
+    </div>
+</body>
+
+</html>

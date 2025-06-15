@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polling Unit Results - Question 1</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        select,
+        button {
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .no-results {
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Question 1: Display Polling Unit Results</h1>
+
+        <form method="POST">
+            <label for="polling_unit_id">Select Polling Unit:</label>
+            <select name="polling_unit_id" id="polling_unit_id">
+                {% for pu in polling_units %}
+                <option value="{{ pu.uniqueid }}" {% if pu.uniqueid==selected_polling_unit_id|int %}selected{% endif %}>
+                    {{ pu.polling_unit_name }} (ID: {{ pu.uniqueid }})
+                </option>
+                {% endfor %}
+            </select>
+            <button type="submit">Show Results</button>
+        </form>
+
+        {% if results %}
+        <h2>Results for: {{ polling_unit_name }}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Party</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td>{{ result.party_abbreviation }}</td>
+                    <td>{{ result.party_score }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif selected_polling_unit_id %}
+        <p class="no-results">No results found for the selected polling unit (ID: {{ selected_polling_unit_id }}).</p>
+        {% else %}
+        <p class="no-results">Please select a polling unit to view results.</p>
+        {% endif %}
+    </div>
+</body>
+
+</html>

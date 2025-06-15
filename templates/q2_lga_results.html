@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>LGA Results - Total Votes by Party</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2em;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        form,
+        table {
+            margin-top: 1.5em;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 50%;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        .no-results {
+            color: #b00;
+            margin-top: 1em;
+        }
+
+        .nav {
+            margin-top: 2em;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Summed Total Result for All Parties in a Local Government Area (LGA)</h1>
+    <form method="POST">
+        <label for="lga_id">Select Local Government Area:</label>
+        <select name="lga_id" id="lga_id" required>
+            <option value="">-- Select LGA --</option>
+            {% for lga in lgas %}
+            <option value="{{ lga.lga_id }}" {% if selected_lga_id==lga.lga_id %}selected{% endif %}>{{ lga.lga_name }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit">Show Results</button>
+    </form>
+
+    {% if results is not none %}
+    {% if results|length > 0 %}
+    <h2>Results for: {{ selected_lga_name }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Party</th>
+                <th>Total Votes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in results %}
+            <tr>
+                <td>{{ row.party_abbreviation }}</td>
+                <td>{{ row.total_score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-results">No results found for the selected LGA.</div>
+    {% endif %}
+    {% endif %}
+
+    <div class="nav">
+        <a href="/">&#8592; Back to Home</a>
+    </div>
+</body>
+
+</html>
